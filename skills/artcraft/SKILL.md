@@ -1,23 +1,26 @@
 ---
 name: artcraft
-description: Create and edit graphics with ArtCraft's VectorCraft (vector illustration, like Illustrator/CorelDRAW) and PhotoCraft (image editing, like Photoshop), driven headless through their MCP servers or CLIs. Use whenever a task needs an image made or changed - app icons, logos, mascots and characters, illustrations, UI art, store screenshots and banners, social images, favicons, SVG/PNG/PDF exports, resizing, recoloring, cropping, filters, layered PSD edits or format conversion - in any project.
+description: Create and edit graphics and documents with ArtCraft's apps, driven headless through their MCP servers or CLIs - VectorCraft (vector illustration, like Illustrator/CorelDRAW), PhotoCraft (image editing, like Photoshop), FigCraft (UI/screen design, like Figma), DesignCraft (page layout, like InDesign) and PdfCraft (PDF tools, like Acrobat). Use whenever a task needs an image, screen mockup, layout or PDF made or changed - app icons, logos, mascots and characters, illustrations, UI art, app/site mockups, store screenshots and banners, social posts, flyers, multi-page documents, favicons, SVG/PNG/PDF exports, resizing, recoloring, filters, PSD edits, merging/splitting/extracting PDFs or format conversion - in any project.
 ---
 
-# ArtCraft: VectorCraft + PhotoCraft
+# ArtCraft: VectorCraft, PhotoCraft, FigCraft, DesignCraft, PdfCraft
 
-Two open-source apps from ArtCraft (github.com/storytold/vectorcraft and
-github.com/storytold/photocraft, MIT or Apache-2.0), installed here as
-command-line tools with MCP servers:
+Open-source apps from ArtCraft (github.com/storytold, MIT or Apache-2.0),
+installed here as command-line tools with MCP servers:
 
 | Tool | Use it for | MCP server | CLI |
 |---|---|---|---|
 | **VectorCraft** | Anything drawn: icons, logos, mascots, illustrations, flat UI art, posters, charts. Exports SVG, PDF, PNG, JPG, WebP, EPS, PSD... | `vectorcraft` | `vectorcraft-cli` |
 | **PhotoCraft** | Anything pixel: editing photos and screenshots, layers, masks, adjustments (curves, levels, hue), filters, layer styles, PSD files, batch resize/convert | `photocraft` | `photocraft-cli` |
+| **FigCraft** | Screens and UI: app/site mockups, frames with auto layout, components, social post sizes, icon sets; exports PNG/SVG/PDF per frame and code (CSS, HTML, React, SwiftUI, Compose). Alpha. | `figcraft` | `figcraft-cli` |
+| **DesignCraft** | Page layout: flyers, posters, menus, magazines, multi-page PDFs with text frames, master pages and styles. Pre-alpha. | `designcraft` | `designcraft-cli` |
+| **PdfCraft** | Existing PDFs: info, text extraction, render a page to PNG, rotate/delete/move pages, combine, extract pages, split, OCR, optimize | `pdfcraft` | `pdfcraft-cli` |
 
-Rule of thumb: **draw in VectorCraft, finish pixels in PhotoCraft.** A mascot,
-icon or logo starts as vectors (crisp at every size), then gets exported to
-PNG at the sizes needed; PhotoCraft is for photos, screenshots and effects
-that only make sense on pixels.
+Rule of thumb: **draw in VectorCraft, finish pixels in PhotoCraft, lay out
+screens in FigCraft and pages in DesignCraft, and handle finished PDFs in
+PdfCraft.** A mascot, icon or logo starts as vectors (crisp at every size),
+then gets exported to PNG at the sizes needed; PhotoCraft is for photos,
+screenshots and effects that only make sense on pixels.
 
 ## Before you start
 
@@ -51,6 +54,8 @@ Every menu item is a command; the main tools:
 - `command_batch {steps:[...], atomic:true}` to send many steps at once
   (`"$N.id"` refers to an object made by step N).
 - `render_preview {max_side}`: **look at it** after every few steps.
+- New shapes get a 1 pt black stroke by default: pass `"stroke": "none"`
+  for flat art (or set it once with `set_paint`).
 - `export {path, format:"png", scale}` / `save_file {path:"x.vectorcraft"}`.
 - `list_commands {filter}` / resource `vectorcraft://commands` to discover
   more; `open_file` reads SVG, PDF, AI, EPS, PNG, PSD...
@@ -83,6 +88,41 @@ photocraft-cli run in.png --cmd image.imageSize --params '{"width":512,"height":
 photocraft-cli batch --actions actions.json --in ./raw --out ./done
 photocraft-cli --help               # every subcommand explains itself
 ```
+
+## FigCraft (screens and UI)
+
+- MCP: `command_list` / `command_run` like the others; `file.newFromTemplate
+  {template}` starts from a mobile app, landing page, dashboard, social post
+  sizes, slides or icon set template.
+- CLI: `figcraft-cli run script.json --out design.figcraft` (a JSON array of
+  `{"command", "params"}`), `figcraft-cli export design.figcraft -o out/
+  --format png --scale 2` (one file per top-level frame),
+  `figcraft-cli render file -o shot.png`, `figcraft-cli commands --filter
+  autoLayout`.
+- Opens `.figcraft`, Figma REST JSON, `.fig` (best effort), SVG and images.
+
+## DesignCraft (page layout)
+
+- CLI: `designcraft-cli run --cmd ID=JSON ... --export out.pdf` or
+  `--all-pages dir/` for PNGs; `designcraft-cli script file` for longer
+  command scripts; `designcraft-cli commands [filter]` and
+  `designcraft-cli describe COMMAND` explain each command.
+- MCP: `designcraft` (same conventions). Pre-alpha: check the output.
+
+## PdfCraft (PDF files)
+
+```sh
+pdfcraft-cli info doc.pdf                                 # structure as JSON
+pdfcraft-cli text doc.pdf --page 3                        # text of a page
+pdfcraft-cli render doc.pdf --page 1 --dpi 150 --out p1.png
+pdfcraft-cli combine a.pdf b.pdf --out all.pdf
+pdfcraft-cli extract doc.pdf --pages 1,3,5-8 --out part.pdf
+pdfcraft-cli split doc.pdf --every 10 --out-dir parts/
+pdfcraft-cli edit in.pdf --out out.pdf --rotate 2:90 --delete 5
+pdfcraft-cli batch files/ --steps ocr,optimize --out-dir done/ --language pt
+```
+
+To read a PDF the user sends, `pdfcraft-cli text` is usually all you need.
 
 ## Recipes
 
